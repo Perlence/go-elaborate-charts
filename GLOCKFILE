@@ -1,0 +1,16 @@
+github.com/BurntSushi/toml 056c9bc7be7190eaa7715723883caffa5f8fa3e4
+github.com/gin-gonic/gin 1a7ab6e4d5fdc72d6df30ef562102ae6e0d18518
+github.com/kr/pretty e6ac2fc51e89a3249e82157fa0bb7a18ef9dd5bb
+github.com/kr/text e373e137fafd8abd480af49182dea0513914adb4
+github.com/magiconair/properties 624009598839a9432bd97bb75552389422357723
+github.com/manucorporat/sse c142f0f1baea5cef7f98a8a6c222f6134368c1f5
+github.com/mattn/go-colorable d67e0b7d1797975196499f79bcc322c08b9f218b
+github.com/mitchellh/mapstructure 2caf8efc93669b6c43e0441cdc6aed17546c96f3
+github.com/shkh/lastfm-go cec7458cab4f9b04105728a55614d93e892bbf79
+github.com/spf13/cast 4d07383ffe94b5e5a6fa3af9211374a4507a0184
+github.com/spf13/jwalterweatherman 3d60171a64319ef63c78bd45bd60e6eab1e75f8b
+github.com/spf13/pflag 5644820622454e71517561946e3d94b9f9db6842
+github.com/spf13/viper db7ff930a189b98d602179d9001d33345f42b8c7
+golang.org/x/net 38f3db3860bb1812858610029b0d8188517d8b74
+gopkg.in/bluesuncorp/validator.v5 27a1d3f1583676b710bb06faf4c8927dd941a893
+gopkg.in/yaml.v2 c1cd2254a6dd314c9d73c338c12688c9325d85c6
