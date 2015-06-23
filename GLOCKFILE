@@ -1,4 +1,5 @@
 github.com/BurntSushi/toml 056c9bc7be7190eaa7715723883caffa5f8fa3e4
+github.com/fatih/structs a9f7daa9c2729e97450c2da2feda19130a367d8f
 github.com/gin-gonic/gin 1a7ab6e4d5fdc72d6df30ef562102ae6e0d18518
 github.com/kr/pretty e6ac2fc51e89a3249e82157fa0bb7a18ef9dd5bb
 github.com/kr/text e373e137fafd8abd480af49182dea0513914adb4
