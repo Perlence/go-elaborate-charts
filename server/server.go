@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Perlence/go-elaborate-charts/common"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/shkh/lastfm-go/lastfm"
@@ -20,13 +21,6 @@ type (
 	elaborateError struct {
 		code    int
 		message string
-	}
-
-	PlayCounts map[string]int64
-
-	WeeklyChartResponse struct {
-		Chart  PlayCounts `json:"Chart"`
-		ToDate int64      `json:"ToDate"`
 	}
 )
 
@@ -65,7 +59,7 @@ func getWeeklyArtistChart(c *gin.Context) {
 		return
 	}
 	chart := getPlayCounts(result)
-	response := &WeeklyChartResponse{chart, request.toDate}
+	response := &common.WeeklyChartResponse{chart, request.toDate}
 	c.JSON(200, structs.Map(response))
 }
 
@@ -90,7 +84,7 @@ func getWeeklyAlbumChart(c *gin.Context) {
 		return
 	}
 	chart := getPlayCounts(result)
-	response := &WeeklyChartResponse{chart, request.toDate}
+	response := &common.WeeklyChartResponse{chart, request.toDate}
 	c.JSON(200, structs.Map(response))
 }
 
@@ -115,7 +109,7 @@ func getWeeklyTrackChart(c *gin.Context) {
 		return
 	}
 	chart := getPlayCounts(result)
-	response := &WeeklyChartResponse{chart, request.toDate}
+	response := &common.WeeklyChartResponse{chart, request.toDate}
 	c.JSON(200, structs.Map(response))
 }
 
@@ -188,7 +182,7 @@ func getPlayCounts(obj interface{}) map[string]int64 {
 			entries = append(entries, structs.Map(entry))
 		}
 	}
-	chart := make(PlayCounts)
+	chart := make(common.PlayCounts)
 	for _, entry := range entries {
 		rawPlayCount := entry["PlayCount"].(string)
 		name := entry["Name"].(string)
