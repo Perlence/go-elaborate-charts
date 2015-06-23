@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Elaborate Last.fm Charts</title>
+  <link href="gfx/favicon.ico" rel="shortcut icon">
+  <link rel="stylesheet" type="text/css" href="css/all.css">
+</head>
+<body>
+  <div id="settings-block">
+    <nav class="navbar navbar-inverse">
+      <a class="navbar-brand" href="/">
+        <img class="img-circle" height="34" alt="Elaborate Last.fm Charts" src="gfx/brand.png" />
+        Elaborate Last.fm Charts
+      </a>
+      <button type="button" class="navbar-toggle">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </nav>
+    <form role="form" id="form">
+      <div class="form-group">
+        <label class="control-label" for="username">Username</label>
+        <input id="username" type="text" class="form-control" name="username" placeholder="Enter your username" />
+        <i class="fa fa-remove form-control-feedback hidden"></i>
+      </div>
+      <div class="form-group">
+        <label class="control-label" for="chart-type">Chart type</label>
+        <select id="chart-type" class="form-control" name="chart-type">
+          <option value="artist">Artists</option>
+          <option value="album">Albums</option>
+          <option value="track">Tracks</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="control-label" for="number-of-positions">Number of positions</label>
+        <select id="number-of-positions" class="form-control" name="number-of-positions">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="control-label" for="timeframe">Timeframe</label>
+        <select id="timeframe" class="form-control" name="timeframe">
+          <option value="last-7-days">Last 7 days</option>
+          <option value="last-month">Last month</option>
+          <option value="last-3-months">Last 3 months</option>
+          <option value="last-6-months">Last 6 months</option>
+          <option value="last-12-months">Last 12 months</option>
+          <option value="overall">Overall</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block ladda-button" type="submit" id="submit" data-style="slide-left">Submit</button>
+      <div id="alert" class="alert alert-inverse hidden" role="alert">
+        <strong id="alert-reason">Server error</strong> <span id="alert-message"></span>
+      </div>
+    </form>
+    <div class="row footer">
+      <div class="share-button-visible">
+        <button type="button" class="btn btn-xxs btn-default"><i class="fa fa-share"></i> Share</button>
+        <div class="fb-share-button" data-href="http://perlence.mooo.com/elaboratecharts/" data-width="40" data-layout="button_count"></div>
+        <a href="https://twitter.com/share" class="twitter-share-button" data-via="Sacret19">Tweet</a>
+      </div>
+      <div class="clearfix"></div>
+      <div class="info">
+        Brought to you by <a href="https://twitter.com/perlencellent" target="_blank">@Perlencellent</a> and <a href="https://twitter.com/sacret19" target="_blank">@Sacret19</a>.
+        Fork us on <a href="https://github.com/Perlence/elaborate-lastfm-charts" target="_blank">GitHub</a>.
+      </div>
+    </div>
+    <div class="row github text-center">
+      <div class="share-button">
+        <button type="button" class="btn btn-xxs btn-default"><i class="fa fa-share"></i> Share</button>
+        <div class="fb-share-button" data-href="http://perlence.mooo.com/elaboratecharts/" data-width="40" data-layout="button"></div>
+        <div>
+          <a href="https://twitter.com/share" class="twitter-share-button" data-via="Sacret19" data-count="none">Tweet</a>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div>
+        <a href="https://github.com/Perlence/elaborate-lastfm-charts" target="_blank"><span class="fa fa-github"></span></a>
+      </div>
+    </div>
+  </div>
+
+  <div id="chart">&nbsp;</div>
+  <script type="text/javascript" src="app.js"></script>
+</body>
+</html>
