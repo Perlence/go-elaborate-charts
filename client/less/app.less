@@ -1,21 +1,18 @@
-@import "_bootstrap";
-@import "ladda";
-
-@import "_variables";
-$fa-font-path: "./fonts";
+@import "bootstrap";
 @import "font-awesome";
+@import (inline) "ladda.css";
 
 html, body {
   height: 100%;
 }
 
 #settings-block {
-  @include make-xs-column(10);
-  @include make-sm-column(6);
-  @include make-md-column(4);
+  .make-xs-column(10);
+  .make-sm-column(6);
+  .make-md-column(4);
 
-  background: $navbar-inverse-bg;
-  color: $navbar-inverse-color;
+  background: @navbar-inverse-bg;
+  color: @navbar-inverse-color;
   display: flex;
   flex-direction: column;
   left: 0;
@@ -68,22 +65,24 @@ form {
 }
 
 .btn-xxs {
-  @include button-size(0, 4px, $font-size-small, $line-height-small, $border-radius-small);
+  .button-size(0, 4px, @font-size-small, @line-height-small, @border-radius-small);
 }
 
 .alert-inverse {
   &.alert-warning {
-    $inverted-alert-warning-text: $alert-warning-bg;
-    $inverted-alert-warning-bg: $alert-warning-text;
-    $inverted-alert-warning-border: darken(adjust-hue($inverted-alert-warning-bg, -10), 5%);
-    @include alert-variant($inverted-alert-warning-bg, $inverted-alert-warning-border, $inverted-alert-warning-text);
+    @inverted-alert-warning-text: @alert-warning-bg;
+    @inverted-alert-warning-bg: @alert-warning-text;
+    // @inverted-alert-warning-border: darken(adjust-hue(@inverted-alert-warning-bg, -10), 5%);
+    // .alert-variant(@inverted-alert-warning-bg, @alert-warning-border, @inverted-alert-warning-text);
+    .alert-variant(@inverted-alert-warning-bg, @alert-warning-border, @inverted-alert-warning-text);
   }
 
   &.alert-danger {
-    $inverted-alert-danger-text: $alert-danger-bg;
-    $inverted-alert-danger-bg: $alert-danger-text;
-    $inverted-alert-danger-border: darken(adjust-hue($inverted-alert-danger-bg, -10), 5%);
-    @include alert-variant($inverted-alert-danger-bg, $inverted-alert-danger-border, $inverted-alert-danger-text);
+    @inverted-alert-danger-text: @alert-danger-bg;
+    @inverted-alert-danger-bg: @alert-danger-text;
+    // @inverted-alert-danger-border: darken(adjust-hue(@inverted-alert-danger-bg, -10), 5%);
+    // .alert-variant(@inverted-alert-danger-bg, @alert-danger-border, @inverted-alert-danger-text);
+    .alert-variant(@inverted-alert-danger-bg, @alert-danger-border, @inverted-alert-danger-text);
   }
 }
 
@@ -124,7 +123,7 @@ form {
   a {
     color: inherit;
     &:hover {
-      color: darken($navbar-inverse-color, 15%);
+      color: darken(@navbar-inverse-color, 15%);
     }
   }
 }
@@ -135,7 +134,7 @@ form {
 }
 
 .share-button {
-  background-color: $navbar-inverse-bg;
+  background-color: @navbar-inverse-bg;
   padding-bottom: 5px;
   width: 72px;
 }

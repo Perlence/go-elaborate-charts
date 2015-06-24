@@ -1,0 +1,37 @@
+{
+  "name": "go-elaborate-charts",
+  "version": "0.2.0",
+  "description": "Elaborate Last.fm charts in Go",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Perlence/go-elaborate-charts.git"
+  },
+  "authors": [
+    "Sviatoslav Abakumov <dust.harvesting@gmail.com>",
+    "Anastasiya Kozayeva <sacret.nk@mail.ru>"
+  ],
+  "keywords": [
+    "golang",
+    "last.fm",
+    "redis"
+  ],
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/Perlence/go-elaborate-charts/issues"
+  },
+  "homepage": "https://github.com/Perlence/go-elaborate-charts",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-coffee": "^2.3.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-concat-css": "^2.2.0",
+    "gulp-if": "^1.2.5",
+    "gulp-less": "^3.0.3",
+    "gulp-minify-css": "^1.1.6",
+    "gulp-uglify": "^1.2.0"
+  }
+}
