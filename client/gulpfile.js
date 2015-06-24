@@ -1,9 +1,9 @@
 var gulp = require('gulp')
-var coffee = require('gulp-coffee')
 var concat = require('gulp-concat')
 var gulpif = require('gulp-if')
 var less = require('gulp-less')
 var minifyCss = require('gulp-minify-css')
+var shell = require('gulp-shell')
 var uglify = require('gulp-uglify')
 
 var isRelease = process.env.RELEASE === '1'
@@ -46,21 +46,15 @@ gulp.task('components', function () {
     .pipe(gulp.dest('js'))
 })
 
-// Compile client-side CoffeeScript.
-gulp.task('coffee', function () {
-  return gulp.src('coffee/**')
-    .pipe(coffee({bare: true}))
-    .pipe(gulpif(isRelease, uglify()))
-    .pipe(gulp.dest('js'))
+gulp.task('gopherjs', function () {
+  return gulp.src('*.go')
+    .pipe(shell(['gopherjs build']))
 })
 
 // Watch for changes in the folder with client-side scripts.
 gulp.task('watch', function () {
-  var watchable = [
-    'coffee/**',
-    'less/**'
-  ]
-  return gulp.watch(watchable, ['coffee'])
+  gulp.watch('less/**', ['less'])
+  gulp.watch(['*.go', '../common/*.go'], ['gopherjs'])
 })
 
 // Build client-side.

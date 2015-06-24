@@ -5,3 +5,5 @@ client/node_modules
 client/css
 client/fonts
 client/js
+client/*.js
+client/**/*.map

@@ -34,7 +34,7 @@
         <label class="control-label" for="chart-type">Chart type</label>
         <select id="chart-type" class="form-control" name="chart-type">
           <option value="artist">Artists</option>
-          <option value="album">Albums</option>
+          <option value="album" selected>Albums</option>
           <option value="track">Tracks</option>
         </select>
       </div>
@@ -44,7 +44,7 @@
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="15">15</option>
-          <option value="20">20</option>
+          <option value="20" selected>20</option>
           <option value="30">30</option>
           <option value="50">50</option>
         </select>
@@ -54,16 +54,14 @@
         <select id="timeframe" class="form-control" name="timeframe">
           <option value="last-7-days">Last 7 days</option>
           <option value="last-month">Last month</option>
-          <option value="last-3-months">Last 3 months</option>
+          <option value="last-3-months" selected>Last 3 months</option>
           <option value="last-6-months">Last 6 months</option>
           <option value="last-12-months">Last 12 months</option>
           <option value="overall">Overall</option>
         </select>
       </div>
       <button class="btn btn-primary btn-block ladda-button" type="submit" id="submit" data-style="slide-left">Submit</button>
-      <div id="alert" class="alert alert-inverse hidden" role="alert">
-        <strong id="alert-reason">Server error</strong> <span id="alert-message"></span>
-      </div>
+      <div id="alerts"></div>
     </form>
     <div class="row footer">
       <div class="share-button-visible">
@@ -87,13 +85,20 @@
       </div>
       <div class="clearfix"></div>
       <div>
-        <a href="https://github.com/Perlence/elaborate-lastfm-charts" target="_blank"><span class="fa fa-github"></span></a>
+        <a href="https://github.com/Perlence/elaborate-lastfm-charts" target="_blank"><i class="fa fa-github"></i></a>
       </div>
     </div>
   </div>
 
   <div id="chart">&nbsp;</div>
+
+  <script id="alert-template" type="text/x-golang-template">
+    <div id="alert" class="alert alert-inverse alert-{{ .Style }}" role="alert">
+      <strong>{{ .Reason }}</strong> <span id="alert-message">{{ .Message }}</span>
+    </div>
+  </script>
+
   <script type="text/javascript" src="js/components.js"></script>
-  <script type="text/javascript" src="js/app.js"></script>
+  <script type="text/javascript" src="client.js"></script>
 </body>
 </html>

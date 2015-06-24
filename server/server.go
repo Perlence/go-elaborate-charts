@@ -12,12 +12,6 @@ import (
 )
 
 type (
-	weeklyChartRequest struct {
-		username string
-		fromDate int64
-		toDate   int64
-	}
-
 	elaborateError struct {
 		code    int
 		message string
@@ -50,16 +44,16 @@ func getWeeklyArtistChart(c *gin.Context) {
 		return
 	}
 	result, err := api.User.GetWeeklyArtistChart(lastfm.P{
-		"user": request.username,
-		"from": request.fromDate,
-		"to":   request.toDate,
+		"user": request.Username,
+		"from": request.FromDate,
+		"to":   request.ToDate,
 	})
 	if err != nil {
 		respondWithError(c, newElaborateError(409, "Failed to get weekly artist chart: %s", err))
 		return
 	}
 	chart := getPlayCounts(result)
-	response := &common.WeeklyChartResponse{chart, request.toDate}
+	response := &common.WeeklyChartResponse{chart, request.ToDate}
 	c.JSON(200, structs.Map(response))
 }
 
@@ -75,16 +69,16 @@ func getWeeklyAlbumChart(c *gin.Context) {
 		return
 	}
 	result, err := api.User.GetWeeklyAlbumChart(lastfm.P{
-		"user": request.username,
-		"from": request.fromDate,
-		"to":   request.toDate,
+		"user": request.Username,
+		"from": request.FromDate,
+		"to":   request.ToDate,
 	})
 	if err != nil {
 		respondWithError(c, newElaborateError(409, "Failed to get weekly album chart: %s", err))
 		return
 	}
 	chart := getPlayCounts(result)
-	response := &common.WeeklyChartResponse{chart, request.toDate}
+	response := &common.WeeklyChartResponse{chart, request.ToDate}
 	c.JSON(200, structs.Map(response))
 }
 
@@ -100,16 +94,16 @@ func getWeeklyTrackChart(c *gin.Context) {
 		return
 	}
 	result, err := api.User.GetWeeklyTrackChart(lastfm.P{
-		"user": request.username,
-		"from": request.fromDate,
-		"to":   request.toDate,
+		"user": request.Username,
+		"from": request.FromDate,
+		"to":   request.ToDate,
 	})
 	if err != nil {
 		respondWithError(c, newElaborateError(409, "Failed to get weekly track chart: %s", err))
 		return
 	}
 	chart := getPlayCounts(result)
-	response := &common.WeeklyChartResponse{chart, request.toDate}
+	response := &common.WeeklyChartResponse{chart, request.ToDate}
 	c.JSON(200, structs.Map(response))
 }
 
@@ -128,7 +122,7 @@ func getInfo(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-func getWeeklyChartParams(c *gin.Context) (*weeklyChartRequest, error) {
+func getWeeklyChartParams(c *gin.Context) (*common.WeeklyChartRequest, error) {
 	username := strings.ToLower(c.Query("username"))
 	rawFromDate := c.Query("fromDate")
 	rawToDate := c.Query("toDate")
@@ -146,7 +140,7 @@ func getWeeklyChartParams(c *gin.Context) (*weeklyChartRequest, error) {
 	if err1 != nil || err2 != nil {
 		return nil, newElaborateError(400, "Date must be presented in Unix format")
 	}
-	return &weeklyChartRequest{username, fromDate, toDate}, nil
+	return &common.WeeklyChartRequest{username, fromDate, toDate}, nil
 }
 
 func getApi() (*lastfm.Api, error) {
