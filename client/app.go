@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"github.com/Perlence/go-elaborate-charts/common"
-	"github.com/franela/goreq"
 	"github.com/gopherjs/jquery"
+	"github.com/jinzhu/now"
 	"github.com/rakyll/coop"
+	"honnef.co/go/js/xhr"
 	"html/template"
 	"time"
 )
@@ -62,11 +64,9 @@ func (a *App) bindEvents() {
 }
 
 func (a *App) submit(e jquery.Event) bool {
-	uri, err := a.getRequestUri()
-	if err != nil {
-		a.showAlert("danger", "Bad request", err)
-		return false
-	}
+	a.clearAlerts()
+
+	uri := BackendUri + "/get_weekly_chart"
 	queries, err := a.prepareRequests()
 	if err != nil {
 		a.showAlert("danger", "Bad request", err)
@@ -78,16 +78,33 @@ func (a *App) submit(e jquery.Event) bool {
 	for _, query := range queries {
 		funcs = append(funcs, func(query common.WeeklyChartRequest) func() {
 			return func() {
-				resp, err := goreq.Request{
-					Uri:         uri,
-					QueryString: query.Values(),
-				}.Do()
+				req := xhr.NewRequest("GET", uri+"?"+query.Values().Encode())
+				req.ResponseType = xhr.Text
+				err := req.Send(nil)
 				if err != nil {
 					a.showAlert("danger", "Failed to get weekly charts", err)
 					return
 				}
+				if 400 <= req.Status && req.Status <= 599 {
+					var errorResponse common.ErrorResponse
+
+					err = json.Unmarshal([]byte(req.ResponseText), &errorResponse)
+					if err != nil {
+						a.showAlert("danger", "Failed to parse weekly charts", err)
+						return
+					}
+					a.showAlert("danger", "Server error", errors.New(errorResponse.Error))
+
+					return
+				}
 				var chart common.WeeklyChartResponse
-				resp.Body.FromJsonTo(&chart)
+
+				err = json.Unmarshal([]byte(req.ResponseText), &chart)
+				if err != nil {
+					a.showAlert("danger", "Failed to parse weekly charts", err)
+					return
+				}
+
 				charts = append(charts, chart)
 			}
 		}(query))
@@ -103,27 +120,12 @@ func (a *App) submit(e jquery.Event) bool {
 	return false
 }
 
-func (a *App) getRequestUri() (string, error) {
-	chartType := a.chartTypeJQuery.Val()
-	var uriPart string
-	switch chartType {
-	case "artist":
-		uriPart = "/get_weekly_artist_chart"
-	case "album":
-		uriPart = "/get_weekly_album_chart"
-	case "track":
-		uriPart = "/get_weekly_track_chart"
-	default:
-		return "", errors.New("Unrecognized chart type: " + chartType)
-	}
-	return BackendUri + uriPart, nil
-}
-
 func (a *App) prepareRequests() ([]common.WeeklyChartRequest, error) {
 	username := a.usernameJQuery.Val()
 	timeframe := a.timeframeJQuery.Val()
+	chartType := a.chartTypeJQuery.Val()
 	var fromDate, toDate time.Time
-	toDate = time.Now()
+	toDate = time.Now().UTC()
 	switch timeframe {
 	case "last-7-days":
 		fromDate = toDate.AddDate(0, 0, -7*2)
@@ -147,6 +149,7 @@ func (a *App) prepareRequests() ([]common.WeeklyChartRequest, error) {
 			queries,
 			common.WeeklyChartRequest{
 				username,
+				chartType,
 				span.Start.Unix(),
 				span.End.Unix(),
 			},
@@ -166,13 +169,17 @@ func (a *App) showAlert(style, reason string, err error) {
 	a.alertTmpl.Execute(&b, alertData)
 	strAlertTmpl := b.String()
 
-	a.alertsJQuery.SetHtml(strAlertTmpl)
+	a.alertsJQuery.Append(strAlertTmpl)
+}
+
+func (a *App) clearAlerts() {
+	a.alertsJQuery.Empty()
 }
 
 func dateSpanRange(start, end time.Time, years, months, days int) []Span {
 	result := make([]Span, 0)
 	var s, e time.Time
-	s = start
+	s = now.New(start).BeginningOfWeek().Add(time.Duration(12) * time.Hour)
 	for s.Before(end) {
 		e = s.AddDate(years, months, days)
 		if e.After(end) {

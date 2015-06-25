@@ -9,14 +9,16 @@ import (
 	"github.com/spf13/viper"
 	"strconv"
 	"strings"
+	"time"
 )
 
-type (
-	elaborateError struct {
-		code    int
-		message string
-	}
-)
+const AllowOrigin = "http://127.0.0.1:8081"
+const DateLayout = "2006-01-02"
+
+type elaborateError struct {
+	code    int
+	message string
+}
 
 func main() {
 	viper.SetConfigName("config")
@@ -25,40 +27,30 @@ func main() {
 	viper.BindEnv("api_secret")
 
 	r := gin.Default()
-	r.GET("/get_weekly_artist_chart", getWeeklyArtistChart)
-	r.GET("/get_weekly_album_chart", getWeeklyAlbumChart)
-	r.GET("/get_weekly_track_chart", getWeeklyTrackChart)
+	if gin.Mode() == gin.DebugMode {
+		r.Use(CORSMiddleware())
+	}
+	r.GET("/get_weekly_chart", getWeeklyChart)
 	r.GET("/get_info", getInfo)
 	r.Run(":8080")
 }
 
-func getWeeklyArtistChart(c *gin.Context) {
-	request, err := getWeeklyChartParams(c)
-	if err != nil {
-		respondWithError(c, err.(*elaborateError))
-		return
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", AllowOrigin)
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Token")
+
+		if c.Request.Method == "OPTIONS" {
+			fmt.Println("OPTIONS")
+			c.AbortWithStatus(200)
+		} else {
+			c.Next()
+		}
 	}
-	api, err := getApi()
-	if err != nil {
-		respondWithError(c, err.(*elaborateError))
-		return
-	}
-	result, err := api.User.GetWeeklyArtistChart(lastfm.P{
-		"user": request.Username,
-		"from": request.FromDate,
-		"to":   request.ToDate,
-	})
-	if err != nil {
-		respondWithError(c, newElaborateError(409, "Failed to get weekly artist chart: %s", err))
-		return
-	}
-	chart := getPlayCounts(result)
-	response := &common.WeeklyChartResponse{chart, request.ToDate}
-	c.JSON(200, structs.Map(response))
 }
 
-func getWeeklyAlbumChart(c *gin.Context) {
-	request, err := getWeeklyChartParams(c)
+func getWeeklyChart(c *gin.Context) {
+	request, err := newWeeklyChartParams(c)
 	if err != nil {
 		respondWithError(c, err.(*elaborateError))
 		return
@@ -68,43 +60,28 @@ func getWeeklyAlbumChart(c *gin.Context) {
 		respondWithError(c, err.(*elaborateError))
 		return
 	}
-	result, err := api.User.GetWeeklyAlbumChart(lastfm.P{
+	params := lastfm.P{
 		"user": request.Username,
 		"from": request.FromDate,
 		"to":   request.ToDate,
-	})
+	}
+	var result interface{}
+	switch request.ChartType {
+	case "artist":
+		result, err = api.User.GetWeeklyArtistChart(params)
+	case "album":
+		result, err = api.User.GetWeeklyAlbumChart(params)
+	case "track":
+		result, err = api.User.GetWeeklyTrackChart(params)
+	}
+	toDate := time.Unix(request.ToDate, 0).Format(DateLayout)
 	if err != nil {
-		respondWithError(c, newElaborateError(409, "Failed to get weekly album chart: %s", err))
+		respondWithError(c, newElaborateError(409, "Failed to get chart for week starting at %s", toDate))
 		return
 	}
 	chart := getPlayCounts(result)
 	response := &common.WeeklyChartResponse{chart, request.ToDate}
-	c.JSON(200, structs.Map(response))
-}
-
-func getWeeklyTrackChart(c *gin.Context) {
-	request, err := getWeeklyChartParams(c)
-	if err != nil {
-		respondWithError(c, err.(*elaborateError))
-		return
-	}
-	api, err := getApi()
-	if err != nil {
-		respondWithError(c, err.(*elaborateError))
-		return
-	}
-	result, err := api.User.GetWeeklyTrackChart(lastfm.P{
-		"user": request.Username,
-		"from": request.FromDate,
-		"to":   request.ToDate,
-	})
-	if err != nil {
-		respondWithError(c, newElaborateError(409, "Failed to get weekly track chart: %s", err))
-		return
-	}
-	chart := getPlayCounts(result)
-	response := &common.WeeklyChartResponse{chart, request.ToDate}
-	c.JSON(200, structs.Map(response))
+	c.JSON(200, response)
 }
 
 func getInfo(c *gin.Context) {
@@ -122,25 +99,32 @@ func getInfo(c *gin.Context) {
 	c.JSON(200, result)
 }
 
-func getWeeklyChartParams(c *gin.Context) (*common.WeeklyChartRequest, error) {
+func newWeeklyChartParams(c *gin.Context) (*common.WeeklyChartRequest, error) {
 	username := strings.ToLower(c.Query("username"))
-	rawFromDate := c.Query("fromDate")
-	rawToDate := c.Query("toDate")
+	chartType := strings.ToLower(c.Query("chart_type"))
+	rawFromDate := c.Query("from_date")
+	rawToDate := c.Query("to_date")
 	if username == "" {
 		return nil, newElaborateError(400, "Parameter 'username' is missing")
 	}
+	if chartType == "" {
+		return nil, newElaborateError(400, "Parameter 'chart_type' is missing")
+	}
 	if rawFromDate == "" {
-		return nil, newElaborateError(400, "Parameter 'fromDate' is missing")
+		return nil, newElaborateError(400, "Parameter 'from_date' is missing")
 	}
 	if rawToDate == "" {
-		return nil, newElaborateError(400, "Parameter 'toDate' is missing")
+		return nil, newElaborateError(400, "Parameter 'to_date' is missing")
+	}
+	if chartType != "artist" && chartType != "album" && chartType != "track" {
+		return nil, newElaborateError(400, "Unrecognized chart type")
 	}
 	fromDate, err1 := strconv.ParseInt(rawFromDate, 10, 64)
 	toDate, err2 := strconv.ParseInt(rawToDate, 10, 64)
 	if err1 != nil || err2 != nil {
 		return nil, newElaborateError(400, "Date must be presented in Unix format")
 	}
-	return &common.WeeklyChartRequest{username, fromDate, toDate}, nil
+	return &common.WeeklyChartRequest{username, chartType, fromDate, toDate}, nil
 }
 
 func getApi() (*lastfm.Api, error) {
@@ -155,9 +139,7 @@ func getApi() (*lastfm.Api, error) {
 }
 
 func respondWithError(c *gin.Context, err *elaborateError) {
-	c.JSON(err.code, map[string]string{
-		"error": err.message,
-	})
+	c.JSON(err.code, &common.ErrorResponse{err.message})
 }
 
 func getPlayCounts(obj interface{}) map[string]int64 {

@@ -7,9 +7,14 @@ import (
 
 type (
 	WeeklyChartRequest struct {
-		Username string `url:"username"`
-		FromDate int64  `url:"fromDate"`
-		ToDate   int64  `url:"toDate"`
+		Username  string `url:"username"`
+		ChartType string `url:"chart_type"`
+		FromDate  int64  `url:"from_date"`
+		ToDate    int64  `url:"to_date"`
+	}
+
+	ErrorResponse struct {
+		Error string
 	}
 
 	PlayCounts map[string]int64
@@ -26,8 +31,9 @@ type (
 
 func (r *WeeklyChartRequest) Values() url.Values {
 	return url.Values{
-		"username": []string{r.Username},
-		"fromDate": []string{strconv.FormatInt(r.FromDate, 10)},
-		"toDate":   []string{strconv.FormatInt(r.ToDate, 10)},
+		"username":   []string{r.Username},
+		"chart_type": []string{r.ChartType},
+		"from_date":  []string{strconv.FormatInt(r.FromDate, 10)},
+		"to_date":    []string{strconv.FormatInt(r.ToDate, 10)},
 	}
 }
