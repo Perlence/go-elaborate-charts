@@ -1,0 +1,6 @@
+github.com/gopherjs/gopherjs 3cb1b3bb735779c50078c68aa4f572bddd34c57f
+github.com/gopherjs/jquery fb45a6e6cc96d16a42442777c841ff86a3ce11a7
+github.com/jinzhu/now 58acbd7e910ec67c071194f6137544f7a864317b
+github.com/rakyll/coop 095866b2ee25c67be0bfcb67b71f7fb1aa9ff34a
+honnef.co/go/js/util 96b8dd9d16214b6cd9d8c8e84b3a375da4688108
+honnef.co/go/js/xhr 00e3346113aed89b501ead4e863c7c3d04fa0c5b
