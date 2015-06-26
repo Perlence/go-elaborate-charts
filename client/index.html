@@ -24,7 +24,7 @@
         <span class="icon-bar"></span>
       </button>
     </nav>
-    <form role="form" id="form">
+    <form role="form" id="form" action="GET">
       <div class="form-group">
         <label class="control-label" for="username">Username</label>
         <input id="username" type="text" class="form-control" name="username" placeholder="Enter your username" />
@@ -32,33 +32,15 @@
       </div>
       <div class="form-group">
         <label class="control-label" for="chart-type">Chart type</label>
-        <select id="chart-type" class="form-control" name="chart-type">
-          <option value="artist">Artists</option>
-          <option value="album" selected>Albums</option>
-          <option value="track">Tracks</option>
-        </select>
+        <select id="chart-type" class="form-control" name="chart-type"></select>
       </div>
       <div class="form-group">
         <label class="control-label" for="number-of-positions">Number of positions</label>
-        <select id="number-of-positions" class="form-control" name="number-of-positions">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="15">15</option>
-          <option value="20" selected>20</option>
-          <option value="30">30</option>
-          <option value="50">50</option>
-        </select>
+        <select id="number-of-positions" class="form-control" name="number-of-positions"></select>
       </div>
       <div class="form-group">
         <label class="control-label" for="timeframe">Timeframe</label>
-        <select id="timeframe" class="form-control" name="timeframe">
-          <option value="last-7-days">Last 7 days</option>
-          <option value="last-month">Last month</option>
-          <option value="last-3-months" selected>Last 3 months</option>
-          <option value="last-6-months">Last 6 months</option>
-          <option value="last-12-months">Last 12 months</option>
-          <option value="overall">Overall</option>
-        </select>
+        <select id="timeframe" class="form-control" name="timeframe"></select>
       </div>
       <button class="btn btn-primary btn-block ladda-button" type="submit" id="submit" data-style="slide-left">Submit</button>
       <div id="alerts"></div>
@@ -92,13 +74,13 @@
 
   <div id="chart">&nbsp;</div>
 
-  <script id="alert-template" type="text/x-golang-template">
-    <div id="alert" class="alert alert-inverse alert-{{ .Style }}" role="alert">
-      <strong>{{ .Reason }}</strong> <span id="alert-message">{{ .Message }}</span>
+  <script id="alert-template" type="text/html">
+    <div id="alert" class="alert alert-inverse alert-${ style }" role="alert">
+      <strong>${ reason }</strong> <span id="alert-message">${ message }</span>
     </div>
   </script>
 
   <script type="text/javascript" src="js/components.js"></script>
-  <script type="text/javascript" src="client.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
 </body>
 </html>

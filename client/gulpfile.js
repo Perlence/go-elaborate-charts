@@ -1,9 +1,11 @@
 var gulp = require('gulp')
 var concat = require('gulp-concat')
 var gulpif = require('gulp-if')
+var inject = require('gulp-inject')
 var less = require('gulp-less')
 var minifyCss = require('gulp-minify-css')
-var shell = require('gulp-shell')
+var sourcemaps = require('gulp-sourcemaps')
+var tsc = require('gulp-typescript')
 var uglify = require('gulp-uglify')
 
 var isRelease = process.env.RELEASE === '1'
@@ -37,7 +39,11 @@ gulp.task('components', function () {
     'bower_components/bootstrap/dist/js/bootstrap.js',
     'bower_components/highstock-release/highstock.src.js',
     'bower_components/ladda-bootstrap/dist/spin.js',
-    'bower_components/ladda-bootstrap/dist/ladda.js'
+    'bower_components/ladda-bootstrap/dist/ladda.js',
+
+    'bower_components/moment/min/moment-with-locales.js',
+    'bower_components/lodash/lodash.js',
+    'bower_components/bluebird/js/browser/bluebird.js'
     // 'bower_components/history.js/scripts/bundled-uncompressed/html4+html5/jquery.history.js'
   ]
   return gulp.src(components)
@@ -46,19 +52,48 @@ gulp.task('components', function () {
     .pipe(gulp.dest('js'))
 })
 
-gulp.task('gopherjs', function () {
-  return gulp.src('*.go')
-    .pipe(shell(['gopherjs build']))
+gulp.task('declare', function () {
+  var target = gulp.src('typings/app.d.ts')
+  var sources = gulp.src('./ts/**/*.ts')
+  return target
+    .pipe(inject(sources, {
+      starttag: '//{',
+      endtag: '//}',
+      transform: function (filepath) {
+        return '/// <reference path="..' + filepath + '" />'
+      }
+    }))
+    .pipe(gulp.dest('./typings'))
+})
+
+gulp.task('ts', ['declare'], function () {
+  var sources = [
+    'ts/**/*.ts',
+    'typings/**/*.ts'
+  ]
+  var ts = gulp.src(sources)
+    .pipe(sourcemaps.init())
+    .pipe(tsc({
+      target: 'ES5',
+      declarationFiles: true,
+      noExternalResolve: true,
+      sortOutput: true
+    }))
+  return ts.js
+    .pipe(concat('app.js'))
+    .pipe(gulpif(isRelease, uglify()))
+    .pipe(sourcemaps.write('js'))
+    .pipe(gulp.dest('js'))
 })
 
 // Watch for changes in the folder with client-side scripts.
 gulp.task('watch', function () {
   gulp.watch('less/**', ['less'])
-  gulp.watch(['*.go', '../common/*.go'], ['gopherjs'])
+  gulp.watch('ts/**', ['ts'])
 })
 
 // Build client-side.
-gulp.task('build', ['less', 'fonts', 'components'])
+gulp.task('build', ['less', 'fonts', 'components', 'ts'])
 
 // Default task: Build client-side.
 gulp.task('default', ['build'])

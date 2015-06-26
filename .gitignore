@@ -4,6 +4,7 @@ client/bower_components
 client/node_modules
 client/css
 client/fonts
+client/typings/*/**
 client/js
-client/*.js
-client/**/*.map
+
+tags

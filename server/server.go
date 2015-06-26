@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const AllowOrigin = "http://127.0.0.1:8081"
+const AllowOrigin = "*"
 const DateLayout = "2006-01-02"
 
 type elaborateError struct {

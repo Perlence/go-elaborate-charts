@@ -26,13 +26,13 @@
   "homepage": "https://github.com/Perlence/go-elaborate-charts",
   "devDependencies": {
     "gulp": "^3.9.0",
-    "gulp-coffee": "^2.3.1",
     "gulp-concat": "^2.6.0",
-    "gulp-concat-css": "^2.2.0",
     "gulp-if": "^1.2.5",
+    "gulp-inject": "^1.3.1",
     "gulp-less": "^3.0.3",
     "gulp-minify-css": "^1.1.6",
-    "gulp-shell": "^0.4.2",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-typescript": "^2.7.7",
     "gulp-uglify": "^1.2.0"
   }
 }
