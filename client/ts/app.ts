@@ -10,6 +10,7 @@ class App {
     $form: JQuery
     $navbarToggle: JQuery
     $alerts: JQuery
+    $chart: JQuery
 
     settingsForm: SettingsForm
 
@@ -26,6 +27,8 @@ class App {
         this.$form = this.$settings.find('#form')
         this.settingsForm = new SettingsForm(this.$form)
         this.formTmpl = _.template($('#form-template').html())
+
+        this.$chart = $('#chart')
 
         this.api = new LastFMClient(BACKEND_URL)
     }
@@ -49,6 +52,7 @@ class App {
         if (!_.isEmpty(errors)) return false
 
         var uri = BACKEND_URL + '/get_weekly_chart'
+        var params = this.settingsForm.values()
         this.api.getInfo(this.settingsForm.username())
             .then((info: UserInfoResponse) => {
                 var toDate = moment.utc()
@@ -56,20 +60,105 @@ class App {
                 var fromDate = this.settingsForm.fromDate(toDate, registeredAt)
 
                 var ranges = spanRange(fromDate, toDate, moment.duration(1, 'week')).reverse()
-                return Promise.map(ranges, (span: Span) => {
-                    return this.api.getWeeklyChart(
-                        this.settingsForm.username(),
-                        this.settingsForm.chartType(),
-                        span.start,
-                        span.end
-                    )
-                })
+                return Promise.map<Span, WeeklyChartResponse>(ranges, (span) =>
+                    this.api.getWeeklyChart(this.settingsForm.username(), this.settingsForm.chartType(), span.start, span.end)
+                        .catch((err: Error) => {
+                            this.showAlert('danger', 'Server error', err)
+                            return {
+                                Chart: {},
+                                ToDate: span.end.unix(),
+                            }
+                        })
+                )
+            })
+            .then((charts: WeeklyChartResponse[]) => {
+                this.drawChart(charts.reverse(), params)
             })
             .catch((err: Error) => {
-                console.error(err)
-                this.showAlert('danger', 'Error', err)
+                this.showAlert('danger', 'Server error', err)
             })
         return false
+    }
+
+    drawChart(charts: WeeklyChartResponse[], params: SettingsValues) {
+        var chart = this.prepareChart(params.numberOfPositions)
+        var agg = new Aggregator(charts, params.numberOfPositions, params.timeframe)
+        var allSeries = agg.allSeries()
+        _.forEach(agg.allSeries(), (series) => {
+            chart.addSeries(series, false)
+        })
+    }
+
+    prepareChart(numberOfPositions: number): HighstockChartObject {
+        var chart
+        this.$chart.highcharts({
+            chart: {
+                type: 'area',
+            },
+            title: {
+                text: null,
+            },
+            xAxis: {
+                tickmarkPlacement: 'on',
+                title: {
+                    enabled: false,
+                },
+                labels: {
+                    enabled: false,
+                },
+            },
+            yAxis: {
+                title: {
+                    text: 'Percent',
+                },
+            },
+            legend: {
+                enabled: false,
+            },
+            navigator: {
+                enabled: false,
+            },
+            rangeSelector: {
+                enabled: false,
+            },
+            scrollbar: {
+                enabled: false,
+            },
+            tooltip: {
+                formatter: function() {
+                    var s = `<span style="font-size: 10px">${ Highcharts.dateFormat('%A, %b %e, %Y', this.x) } </span>`
+                    var points = _.sortBy(this.points, (point: any) => point.y)
+                    _.forEach(points.slice(points.length - numberOfPositions), (point, index) => {
+                        var strIndex = _.padLeft(String(numberOfPositions - index), 2)
+                        if (point.y > 0) {
+                            s += `<br/>${ strIndex }<span style=\"color: ${ point.series.color };\"> ● </span>`
+                            if (point.series.state == 'hover')
+                                s += `<b>${ point.series.name }</b>: <b>${ point.y }</b>`
+                            else
+                                s += `${ point.series.name }: <b>${ point.y }</b>`
+                        }
+                    })
+                    return s
+                },
+            },
+            plotOptions: {
+                area: {
+                    stacking: 'percent',
+                    lineColor: '#ffffff',
+                    lineWidth: 1,
+                    marker: {
+                        enabled: false,
+                    },
+                },
+                // series: {
+                //     animation: {
+                //         complete: () => chart.reflow(),
+                //     },
+                // },
+            },
+            series: [],
+        })
+        return chart = this.$chart.highcharts()
     }
 
     navbarToggle(e: JQueryEventObject) {
@@ -104,6 +193,13 @@ class App {
     }
 }
 
+interface SettingsValues {
+    username: string
+    chartType: string
+    numberOfPositions: number
+    timeframe: string
+}
+
 class SettingsForm {
     $form: JQuery
     $settings: JQuery
@@ -113,8 +209,8 @@ class SettingsForm {
     $timeframe: JQuery
 
     chartTypeValues = {
-        album: 'Albums',
         artist: 'Artists',
+        album: 'Albums',
         track: 'Tracks',
     }
     numberOfPositionsValues = [5, 10, 15, 20, 30, 50]
@@ -127,7 +223,7 @@ class SettingsForm {
         'last-12-months': 'Last 12 months',
         'overall': 'Overall',
     }
-    timeframeDefault = 'last-6-months'
+    timeframeDefault = 'last-month'
 
     constructor($form: JQuery) {
         this.$form = $form
@@ -137,32 +233,19 @@ class SettingsForm {
         this.$timeframe = $form.find('#timeframe')
     }
 
-    render() {
-        var option = _.template('<option value="${ value }">${ desc }</option>')
-        var optionSelected = _.template('<option value="${ value }" selected>${ desc }</option>')
-        _.forEach(this.chartTypeValues, (desc, value) => {
-            this.$chartType.append(option({desc: desc, value: value}))
-        })
-        _.forEach(this.numberOfPositionsValues, (desc, value) => {
-            if (value === this.numberOfPositionsDefault) {
-                this.$numberOfPositions.append(optionSelected({desc: desc, value: value}))
-            } else {
-                this.$numberOfPositions.append(option({desc: desc, value: value}))
-            }
-        })
-        _.forEach(this.timeframeValues, (desc, value) => {
-            if (value === this.timeframeDefault) {
-                this.$timeframe.append(optionSelected({desc: desc, value: value}))
-            } else {
-                this.$timeframe.append(option({desc: desc, value: value}))
-            }
-        })
-    }
-
     username(): string { return this.$username.val() }
     chartType(): string { return this.$chartType.val() }
     numberOfPositions(): string { return this.$numberOfPositions.val() }
     timeframe(): string { return this.$timeframe.val() }
+
+    values(): SettingsValues {
+        return {
+            username: this.username(),
+            chartType: this.chartType(),
+            numberOfPositions: Number(this.numberOfPositions()),
+            timeframe: this.timeframe(),
+        }
+    }
 
     fromDate(toDate: moment.Moment, registeredAt: moment.Moment): moment.Moment {
         var timeframe = this.timeframe()
@@ -193,10 +276,34 @@ class SettingsForm {
         return fromDate
     }
 
-    verify(): IObject<Error> {
-        var errors: IObject<Error> = {}
+    render() {
+        var option = _.template('<option value="${ value }">${ desc }</option>')
+        var optionSelected = _.template('<option value="${ value }" selected>${ desc }</option>')
+        _.forEach(this.chartTypeValues, (desc, value) => {
+            this.$chartType.append(option({desc: desc, value: value}))
+        })
+        _.forEach(this.numberOfPositionsValues, (desc, value) => {
+            if (value === this.numberOfPositionsDefault) {
+                this.$numberOfPositions.append(optionSelected({desc: desc, value: desc}))
+            }
+            else {
+                this.$numberOfPositions.append(option({desc: desc, value: desc}))
+            }
+        })
+        _.forEach(this.timeframeValues, (desc, value) => {
+            if (value === this.timeframeDefault) {
+                this.$timeframe.append(optionSelected({desc: desc, value: value}))
+            }
+            else {
+                this.$timeframe.append(option({desc: desc, value: value}))
+            }
+        })
+    }
+
+    verify(): Dictionary<Error> {
+        var errors: Dictionary<Error> = {}
         if (!this.username()) {
-            errors['username'] = new Error('Please write your username')
+            errors['username'] = new Error('Please enter username')
         }
         if (!(this.chartType() in this.chartTypeValues)) {
             errors['chartType'] = new Error('Unrecognized chart type')
@@ -205,6 +312,61 @@ class SettingsForm {
             errors['timeframe'] = new Error('Unrecognized timeframe')
         }
         return errors
+    }
+}
+
+class Aggregator {
+    private charts: WeeklyChartResponse[]
+    private numberOfPositions: number
+    private timeframe: string
+    private indexedCharts: Dictionary<WeeklyChartResponse>
+    private timestamps: number[]
+    private items: string[]
+
+    constructor(charts: WeeklyChartResponse[], numberOfPositions: number, timeframe: string) {
+        this.charts = charts
+        this.numberOfPositions = numberOfPositions
+        this.timeframe = timeframe
+        this.indexedCharts = _.indexBy(charts, 'ToDate')
+        this.timestamps = _.pluck(charts, 'ToDate')
+        this.items = _(charts)
+            .map((chart) => _.keys(chart.Chart))
+            .flatten<string>()
+            .uniq()
+            .value()
+    }
+
+    allSeries(): HighchartsAreaChartSeriesOptions[] {
+        var charts = this.charts
+        var acc = new PeriodicAccumulator(charts[0].ToDate, charts[charts.length - 1].ToDate, this.timeframe)
+        var accumulated = _(this.indexedCharts)
+            .map((chart: WeeklyChartResponse, timestamp) => {
+                return _(chart.Chart)
+                    .map((count: number, item) => {
+                        acc.add(Number(timestamp), item, count)
+                        return {
+                            timestamp: timestamp,
+                            item: item,
+                            count: acc.get(Number(timestamp), item),
+                        }
+                    })
+                    .sortBy('count')
+                    .reverse()
+                    .take(this.numberOfPositions)
+                    .value()
+            })
+            .flatten()
+            .value()
+        var grouped = _.groupBy(accumulated, 'item')
+        return _.map(grouped, (charts, item) => {
+            var byTimestamp = _.indexBy(charts, 'timestamp')
+            return {
+                name: item,
+                data: _.map(this.timestamps, (timestamp) =>
+                    [timestamp, (byTimestamp[timestamp] || {})['count'] || 0]
+                ),
+            }
+        })
     }
 }
 

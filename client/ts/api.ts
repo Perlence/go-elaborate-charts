@@ -25,7 +25,7 @@ interface UserInfoResponse {
 }
 
 interface WeeklyChartResponse {
-    Chart: Object
+    Chart: Dictionary<number>
     ToDate: number
 }
 
@@ -63,7 +63,7 @@ class LastFMClient {
             username: username,
             chart_type: chartType,
             from_date: fromDate.unix(),
-            to_date: toDate.unix()
+            to_date: toDate.unix(),
         })
     }
 }
