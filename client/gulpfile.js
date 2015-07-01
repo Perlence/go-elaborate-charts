@@ -77,7 +77,8 @@ gulp.task('ts', ['declare'], function () {
       target: 'ES5',
       declarationFiles: true,
       noExternalResolve: true,
-      sortOutput: true
+      sortOutput: true,
+      noEmitOnError: true
     }))
   return ts.js
     .pipe(concat('app.js'))
