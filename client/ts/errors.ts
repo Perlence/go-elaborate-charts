@@ -1,5 +1,4 @@
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="../typings/app.d.ts" />
+/// <reference path="../typings/typings.d.ts" />
 class XHRError implements Error {
     name = 'XHRError'
     message: string

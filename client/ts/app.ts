@@ -1,5 +1,4 @@
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="../typings/app.d.ts" />
+/// <reference path="../typings/typings.d.ts" />
 var BACKEND_URL = 'http://127.0.0.1:8080'
 
 class App {
